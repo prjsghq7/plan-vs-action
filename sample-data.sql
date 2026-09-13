@@ -77,10 +77,10 @@ INSERT INTO task_tags (task_id, tag_id) VALUES
   ('sample_task_many_14', 'sample_tag_test');
 
 INSERT INTO actions (
-  id, task_id, started_at, ended_at, actual_minutes, note, created_at
+  id, task_id, worked_on, actual_minutes, note, created_at
 ) VALUES
-  ('sample_action_done', 'sample_task_done', '2026-09-09T11:00:00.000Z', '2026-09-09T11:35:00.000Z', 35, '', '2026-09-09T11:35:00.000Z'),
-  ('sample_action_progress', 'sample_task_today', '2026-09-10T09:00:00.000Z', '2026-09-10T09:25:00.000Z', 25, '레이아웃 간격을 다시 조정함', '2026-09-10T09:25:00.000Z');
+  ('sample_action_done', 'sample_task_done', '2026-09-09', 35, '', '2026-09-09T11:35:00.000Z'),
+  ('sample_action_progress', 'sample_task_today', '2026-09-10', 25, '레이아웃 간격을 다시 조정함', '2026-09-10T09:25:00.000Z');
 
 INSERT INTO task_status_events (
   id, task_id, idempotency_key, from_status, to_status, version_before, created_at

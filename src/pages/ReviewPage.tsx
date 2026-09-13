@@ -2,9 +2,10 @@ import {useCallback,useEffect,useRef,useState} from 'react'
 import type {FormEvent} from 'react'
 import {api} from '../lib/api'
 import type {Action,Plan,Review,Summary,Task} from '../lib/types'
-import {minutes} from '../lib/types'
+import {calendarDateLabel,minutes} from '../lib/types'
 import {Notice} from '../components/Notice'
 import {BackButton} from '../components/BackButton'
+import {validateForm} from '../lib/formValidation'
 
 export function ReviewPage({plan}:{plan:Plan}){
  const [summary,setSummary]=useState<Summary|null>(null)
@@ -47,6 +48,8 @@ export function ReviewPage({plan}:{plan:Plan}){
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault()
   const form=event.currentTarget,f=new FormData(form)
+  const invalidMessage=validateForm(form)
+  if(invalidMessage){setNotice(invalidMessage);return}
   try{
    await api('/api/reviews',{method:'POST',body:JSON.stringify({planId:plan.id,improvementText:f.get('improvementText')})})
    form.reset();setNotice('다음 계획을 위한 한 줄을 저장했습니다.');await load()
@@ -75,9 +78,9 @@ export function ReviewPage({plan}:{plan:Plan}){
   </section>
   <div className="grid two">
    <section className="panel comparison"><div className="eyebrow">PLAN VS ACTION</div><h2>기록된 시간 비교</h2>{summary?<><div><span>기록 대상 예상</span><b>{minutes(summary.tracked_estimated_minutes)}</b></div><div><span>기록된 실제</span><b>{minutes(summary.actual_minutes)}</b></div><div className="difference"><span>차이</span><b>{differenceLabel}</b></div><small>실행 기록이 있는 {summary.tracked_count}개 할 일 기준 · 전체 예상 {minutes(summary.estimated_minutes)}</small><small>지연 기준일 · 서울 {summary.today_seoul}</small></>:<div className="empty loading-state">시간 기록을 불러오는 중입니다.</div>}</section>
-   <section className="panel"><div className="eyebrow">다음 계획</div><h2>다음에는 이렇게</h2><form onSubmit={submit}><label>고칠 점 한 가지<textarea name="improvementText" required placeholder="예상 시간을 현실적으로 잡는다"/></label><button className="primary review-submit">회고 저장</button></form><ul className="review-list">{reviews.filter(review=>review.plan_id===plan.id).map(review=><li key={review.id}>{review.improvement_text}</li>)}</ul></section>
+   <section className="panel"><div className="eyebrow">다음 계획</div><h2>다음에는 이렇게</h2><form onSubmit={submit} noValidate><label>고칠 점 한 가지<textarea name="improvementText" required placeholder="예상 시간을 현실적으로 잡는다"/></label><button className="primary review-submit">회고 저장</button></form><ul className="review-list">{reviews.filter(review=>review.plan_id===plan.id).map(review=><li key={review.id}>{review.improvement_text}</li>)}</ul></section>
   </div>
-  <section className="panel wide"><div className="eyebrow">실행 내역</div><h2>실행 기록</h2><div className="action-list">{actions.map(action=><article key={action.id}><b>{action.task_title}</b><span>{new Date(action.started_at).toLocaleString('ko-KR')} · {minutes(action.actual_minutes)}</span>{action.note&&<p>메모 · {action.note}</p>}</article>)}</div></section>
+  <section className="panel wide"><div className="eyebrow">실행 내역</div><h2>실행 기록</h2><div className="action-list">{actions.map(action=><article key={action.id}><b>{action.task_title}</b><span>{calendarDateLabel(action.worked_on)} · {minutes(action.actual_minutes)}</span>{action.note&&<p>메모 · {action.note}</p>}</article>)}</div></section>
   {evidenceTitle&&<div className="dialog-backdrop" onMouseDown={()=>setEvidenceTitle('')}><section ref={dialogRef} className="evidence-dialog" role="dialog" aria-modal="true" aria-labelledby="evidence-dialog-title" onMouseDown={event=>event.stopPropagation()}><header><div><span>선택한 계획의 기록</span><h2 id="evidence-dialog-title">{evidenceTitle}</h2></div><button autoFocus onClick={()=>setEvidenceTitle('')} aria-label="근거 목록 닫기">×</button></header><div className="evidence-dialog-list">{evidenceLoading?<div className="empty">기록을 불러오는 중입니다.</div>:<>{evidence.map(task=><article key={task.id}><div><b>{task.title}</b><span>{task.status==='completed'?'완료':'진행 중'} · {task.due_date}</span></div><strong>실제 {minutes(task.actual_minutes)}</strong></article>)}{!evidence.length&&<div className="empty">해당하는 기록이 없습니다.</div>}</>}</div></section></div>}
   <Notice message={notice} onClose={()=>setNotice('')}/>
  </>

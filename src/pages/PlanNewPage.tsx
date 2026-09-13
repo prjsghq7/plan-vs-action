@@ -7,6 +7,7 @@ import {navigate} from '../lib/router'
 import {Notice} from '../components/Notice'
 import {PriorityPicker} from '../components/PriorityPicker'
 import {TagPicker} from '../components/TagPicker'
+import {validateForm} from '../lib/formValidation'
 
 const MAX_TASKS=20
 
@@ -17,7 +18,9 @@ export function PlanNewPage({onChanged}:{onChanged:()=>Promise<void>}){
  function update(key:string,field:keyof DraftTask,value:string|number){setTasks(rows=>rows.map(row=>row.key===key?{...row,[field]:value}:row))}
  function addTask(){setTasks(rows=>rows.length<MAX_TASKS?[...rows,emptyTask(initialDueDate)]:rows)}
  async function submit(event:FormEvent<HTMLFormElement>){
-  event.preventDefault()
+ event.preventDefault()
+  const invalidMessage=validateForm(event.currentTarget)
+  if(invalidMessage){setNotice(invalidMessage);return}
   const f=new FormData(event.currentTarget)
   try{
    const created=await api<{id:string}>('/api/plans',{method:'POST',body:JSON.stringify({
@@ -32,7 +35,7 @@ export function PlanNewPage({onChanged}:{onChanged:()=>Promise<void>}){
  return <>
   <section className="panel form-page">
    <h2 className="form-title">계획과 할 일 만들기</h2>
-   <form onSubmit={submit}>
+   <form onSubmit={submit} noValidate>
     <section className="plan-basics-card">
      <div className="form-section-head"><span>PLAN</span><h3>계획 정보</h3></div>
      <div className="plan-main-row">

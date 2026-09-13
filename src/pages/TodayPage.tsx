@@ -31,7 +31,7 @@ export function TodayPage(){
   {tasks===null&&!error&&<section className="panel empty loading-state">오늘의 할 일을 불러오는 중입니다.</section>}
   {tasks!==null&&<div className="today-sections">
    {!!overdue.length&&<section className="today-group overdue-group"><header><div><span className="eyebrow">OVERDUE</span><h3>먼저 처리할 지연 항목</h3></div><b>{overdue.length}개</b></header><div className="today-task-list">{overdue.map(task=><TaskCard task={task} overdue key={task.id}/>)}</div></section>}
-   <section className="today-group"><header><div><span className="eyebrow">DUE TODAY</span><h3>오늘 마감할 항목</h3></div><b>{dueToday.length}개</b></header>{dueToday.length?<div className="today-task-list">{dueToday.map(task=><TaskCard task={task} key={task.id}/>)}</div>:<div className="today-empty"><b>오늘 마감할 미완료 항목이 없습니다.</b><span>새 계획을 만들거나 계획 목록에서 다음 할 일을 확인해 보세요.</span><div><button className="secondary" onClick={()=>navigate('/plans')}>계획 목록</button><button className="primary create-button" onClick={()=>navigate(`/plans/new?dueDate=${encodeURIComponent(today)}`)}>+ 새 계획</button></div></div>}</section>
+   <section className="today-group"><header><div><span className="eyebrow">DUE TODAY</span><h3>오늘 마감할 항목</h3></div><b>{dueToday.length}개</b></header>{dueToday.length?<div className="today-task-list">{dueToday.map(task=><TaskCard task={task} key={task.id}/>)}</div>:<div className="today-empty"><b>오늘 마감할 미완료 항목이 없습니다.</b><span>새 계획을 만들거나 계획 목록에서 다음 할 일을 확인해 보세요.</span><div><button className="secondary" onClick={()=>navigate('/plans')}>계획 목록</button><button className="primary create-button create-entry" onClick={()=>navigate(`/plans/new?dueDate=${encodeURIComponent(today)}`)}>새 계획</button></div></div>}</section>
   </div>}
  </section>
 }
