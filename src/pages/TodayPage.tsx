@@ -2,15 +2,16 @@ import {useEffect,useMemo,useState} from 'react'
 import {api} from '../lib/api'
 import {navigate} from '../lib/router'
 import type {Task} from '../lib/types'
-import {minutes,priorityLabel,today} from '../lib/types'
+import {createdDateLabel,minutes,priorityLabel,today} from '../lib/types'
 
 function TaskCard({task,overdue=false}:{task:Task;overdue?:boolean}){
- const timing=`예상 ${minutes(task.estimated_minutes)}${task.actual_minutes?` · 기록 ${minutes(task.actual_minutes)}`:''}`
+ const timing=`예상 ${minutes(task.estimated_minutes)}${task.actual_minutes?`, 기록 ${minutes(task.actual_minutes)}`:''}`
+ const visibleTags=task.tags.slice(0,2),hiddenTagCount=task.tags.length-visibleTags.length
  return <button className="today-task-card" onClick={()=>navigate(`/plans/${task.plan_id}/tasks/${task.id}/action`)} aria-label={`${task.title} 실행하기`}>
   <span className="today-task-head"><span className={`badge ${task.priority}`}>{priorityLabel[task.priority]}</span><span className="today-task-action">실행하기 <b>→</b></span></span>
   <strong>{task.title}</strong>
-  <span className="today-task-meta">{task.plan_title} · <em className={overdue?'overdue':''}>{overdue?`${task.due_date} 마감`:'오늘 마감'}</em> · {timing}</span>
-  {!!task.tags.length&&<span className="today-task-tags">{task.tags.map(tag=><i key={tag}>#{tag}</i>)}</span>}
+  <span className="today-task-meta"><span className="today-task-plan" title={task.plan_title}>{task.plan_title}</span><em className={overdue?'overdue':''}>{overdue?`${task.due_date} 마감`:'오늘 마감'}</em><span className="today-task-timing">{timing}</span></span>
+  <span className="today-task-footer"><span className="today-task-created">작성 {createdDateLabel(task.created_at)}</span>{!!task.tags.length&&<span className="today-task-tags" title={task.tags.map(tag=>`#${tag}`).join(' ')}>{visibleTags.map(tag=><i key={tag}>#{tag}</i>)}{hiddenTagCount>0&&<i className="tag-overflow">외 {hiddenTagCount}개</i>}</span>}</span>
  </button>
 }
 

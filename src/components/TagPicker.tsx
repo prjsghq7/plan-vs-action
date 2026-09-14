@@ -61,7 +61,7 @@ export function TagPicker({name,value,defaultValue=[],onChange}:Props){
   </div>
   {name&&<input type="hidden" name={name} value={selected.join(',')}/>}
   {focused&&<div className="tag-suggestions">
-   {suggestions.map(option=><button type="button" onMouseDown={event=>event.preventDefault()} onClick={()=>add(option.name)} key={option.id}><span><b>{option.name}</b><small>기존 태그 · 할 일 {option.usage_count}개</small></span><i>선택</i></button>)}
+   {suggestions.map(option=><button type="button" onMouseDown={event=>event.preventDefault()} onClick={()=>add(option.name)} key={option.id}><span><b>{option.name}</b><small>기존 태그, 할 일 {option.usage_count}개</small></span><i>선택</i></button>)}
    {queryParts.name&&!exact&&<button type="button" className="create-tag" onMouseDown={event=>event.preventDefault()} onClick={()=>add(queryParts.name)}><span><b>“{queryParts.name}”</b><small>{suggestions.length?'비슷한 태그를 확인한 뒤 새로 만드세요.':'새 태그로 추가합니다.'}</small></span><i>NEW</i></button>}
    {!suggestions.length&&!queryParts.name&&<div className="tag-suggestion-empty">사용할 태그를 입력하세요.</div>}
   </div>}

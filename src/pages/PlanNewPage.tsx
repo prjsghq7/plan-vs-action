@@ -47,7 +47,7 @@ export function PlanNewPage({onChanged}:{onChanged:()=>Promise<void>}){
 
     <div className="form-section-head draft-section-head">
      <span>TASKS</span><h3>할 일 구성</h3>
-     <small>{tasks.length}개 · 최대 {MAX_TASKS}개</small>
+     <small>{tasks.length}개, 최대 {MAX_TASKS}개</small>
     </div>
     <div className="draft-tasks">
      {tasks.map((task,index)=><fieldset className="draft-task-card" key={task.key}>
