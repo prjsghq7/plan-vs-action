@@ -423,7 +423,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid rgba(82,109,156,.22);b
 .primary.create-button.create-entry::before{content:'+';display:block;width:auto;height:auto;flex:0 0 auto;background:transparent;color:currentColor;font-size:19px;font-weight:500;line-height:1}
 .primary.create-button.create-entry:hover:not(:disabled){border-color:#5d430d;background:#70531a;color:#fff;box-shadow:0 6px 16px rgba(100,74,18,.27);transform:none}
 .primary.action-submit,.task-actions .action-button{border-color:var(--action);background:var(--action);color:#fff}
-.primary.action-submit:hover,.task-actions .action-button:hover{border-color:#32546d;background:#32546d;transform:none}
+.primary.action-submit:hover,.task-actions .action-button:hover{border-color:#32546d;background:#32546d;color:#fff;transform:none}
 .primary.edit-submit,.primary.review-submit{border-color:var(--ink);background:var(--ink);color:#fff}
 .primary.edit-submit:hover,.primary.review-submit:hover{border-color:#111516;background:#111516;transform:none}
 .secondary,.edit-task-button,.review-button{border:1px solid #aeb7c0;background:#fff;color:#38434d}
