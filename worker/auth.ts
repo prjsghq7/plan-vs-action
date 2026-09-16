@@ -3,6 +3,7 @@ import { connect } from 'cloudflare:sockets'
 export type AuthBindings={SMTP_HOST?:string;SMTP_PORT?:string;SMTP_USER?:string;SMTP_PASS?:string;MAIL_FROM?:string;AUTH_SECRET?:string}
 export const sessionTtlSeconds=60*30
 export const verificationTtlMinutes=15
+const passwordIterations=50000
 const encoder=new TextEncoder()
 const encode=(value:Uint8Array)=>btoa(String.fromCharCode(...value))
 const bytes=(value:string)=>encoder.encode(value)
@@ -11,7 +12,7 @@ export const token=()=>encode(crypto.getRandomValues(new Uint8Array(32))).replac
 export const code=()=>String(Math.floor(100000+Math.random()*900000))
 export async function digest(value:string){return encode(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes(value))))}
 export async function sign(value:string,secret:string){const key=await crypto.subtle.importKey('raw',bytes(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);return encode(new Uint8Array(await crypto.subtle.sign('HMAC',key,bytes(value))))}
-export async function password(password:string,salt?:string){const actualSalt=salt??encode(crypto.getRandomValues(new Uint8Array(16)));const key=await crypto.subtle.importKey('raw',bytes(password),'PBKDF2',false,['deriveBits']);const derived=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:bytes(actualSalt),iterations:310000},key,256);return {salt:actualSalt,hash:encode(new Uint8Array(derived))}}
+export async function password(password:string,salt?:string){const actualSalt=salt??encode(crypto.getRandomValues(new Uint8Array(16)));const key=await crypto.subtle.importKey('raw',bytes(password),'PBKDF2',false,['deriveBits']);const derived=await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:bytes(actualSalt),iterations:passwordIterations},key,256);return {salt:actualSalt,hash:encode(new Uint8Array(derived))}}
 export function same(left:string,right:string){const a=bytes(left),b=bytes(right);let diff=a.length^b.length;const length=Math.max(a.length,b.length);for(let index=0;index<length;index+=1)diff|=(a[index]??0)^(b[index]??0);return diff===0}
 export function readCookie(request:Request,name:string){return request.headers.get('Cookie')?.split(';').map(item=>item.trim()).find(item=>item.startsWith(`${name}=`))?.slice(name.length+1)}
 
