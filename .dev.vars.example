@@ -1,0 +1,8 @@
+# Copy this file to .dev.vars and replace every value locally. Never commit .dev.vars.
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your-address@gmail.com
+SMTP_PASS=your-16-character-google-app-password
+MAIL_FROM=your-address@gmail.com
+# Create a random value with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+AUTH_SECRET=replace-with-a-random-64-character-value

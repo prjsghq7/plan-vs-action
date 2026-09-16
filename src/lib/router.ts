@@ -1,6 +1,11 @@
 import {useEffect,useState} from 'react'
 
 export type Route=
+ | {name:'login'}
+ | {name:'signup'}
+ | {name:'verify-email'}
+ | {name:'reset-password'}
+ | {name:'account'}
  | {name:'dashboard'}
  | {name:'today'}
  | {name:'plans'}
@@ -12,6 +17,11 @@ export type Route=
 
 export function parseRoute(pathname:string):Route{
   const path=pathname==='/'?pathname:pathname.replace(/\/+$/,'')
+  if(path==='/login')return{name:'login'}
+  if(path==='/signup')return{name:'signup'}
+ if(path==='/verify-email')return{name:'verify-email'}
+ if(path==='/reset-password')return{name:'reset-password'}
+ if(path==='/account')return{name:'account'}
   if(path==='/'||path==='/dashboard')return{name:'dashboard'}
   if(path==='/today')return{name:'today'}
   if(path==='/plans')return{name:'plans'}

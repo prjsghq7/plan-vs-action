@@ -12,16 +12,19 @@ import {ActionPage} from './pages/ActionPage'
 import {ReviewPage} from './pages/ReviewPage'
 import {DashboardPage} from './pages/DashboardPage'
 import {TodayPage} from './pages/TodayPage'
+import {AuthPage} from './pages/AuthPage'
+import {AccountPage} from './pages/AccountPage'
 
 export default function App(){
  const route=useRoute()
- const [plans,setPlans]=useState<Plan[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('')
+ const authMode=route.name==='login'||route.name==='signup'||route.name==='verify-email'||route.name==='reset-password'?route.name:null
+ const [plans,setPlans]=useState<Plan[]>([]),[loading,setLoading]=useState(!authMode),[error,setError]=useState(''),[session,setSession]=useState<{name:string;email:string;expiresAt:string}|null>(null)
  const loadPlans=useCallback(async()=>{try{setPlans(await api<Plan[]>('/api/plans'));setError('')}catch(cause){setError((cause as Error).message)}finally{setLoading(false)}},[])
  // Initial route normalization and server state hydration.
- // eslint-disable-next-line react-hooks/set-state-in-effect
- useEffect(()=>{void loadPlans()},[loadPlans])
+ useEffect(()=>{if(authMode)return;void api<{name:string;email:string;expiresAt:string}>('/api/auth/me').then(value=>{setSession(value);return loadPlans()}).catch(()=>navigate('/login',true))},[authMode,loadPlans])
  const planId='planId'in route?route.planId:''
  const plan=useMemo(()=>plans.find(item=>item.id===planId),[plans,planId])
+ if(authMode)return <AuthPage mode={authMode}/>
  let page
  if(loading)page=<section className="panel empty">데이터를 불러오는 중입니다.</section>
  else if(error)page=<section className="panel empty">{error}</section>
@@ -32,6 +35,7 @@ export default function App(){
  else if(route.name==='plan-detail'&&plan)page=<PlanDetailPage key={plan.id} plan={plan} onChanged={loadPlans}/>
  else if(route.name==='action'&&plan)page=<ActionPage key={`${plan.id}:${route.taskId??''}`} plan={plan} taskId={route.taskId} onChanged={loadPlans}/>
  else if(route.name==='review'&&plan)page=<ReviewPage key={plan.id} plan={plan}/>
+ else if(route.name==='account'&&session)page=<AccountPage session={session}/>
  else page=<section className="panel empty"><h2>페이지를 찾을 수 없습니다.</h2><button className="primary" onClick={()=>navigate('/plans')}>계획 목록으로</button></section>
- return <Layout route={route}>{page}</Layout>
+ return <Layout route={route} session={session}>{page}</Layout>
 }

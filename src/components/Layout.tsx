@@ -1,9 +1,10 @@
 import {useEffect,useRef,useState,type ReactNode} from 'react'
 import type {Route} from '../lib/router'
 import {navigate} from '../lib/router'
+import {api} from '../lib/api'
 
-type Props={route:Route;children:ReactNode}
-type IconName='home'|'dashboard'|'today'|'plans'|'add'|'download'
+type Props={route:Route;children:ReactNode;session:{name:string;email:string;expiresAt:string}|null}
+type IconName='home'|'dashboard'|'today'|'plans'|'add'|'download'|'logout'|'settings'|'refresh'
 
 const STORAGE_KEY='plan-vs-action:sidebar-collapsed'
 
@@ -14,17 +15,20 @@ function NavIcon({name}:{name:IconName}){
   today:<><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></>,
   plans:<><path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></>,
   add:<><path d="M12 5v14M5 12h14"/></>,
-  download:<><path d="M12 3v12m0 0 5-5m-5 5-5-5"/><path d="M5 21h14"/></>
+  download:<><path d="M12 3v12m0 0 5-5m-5 5-5-5"/><path d="M5 21h14"/></>,
+  logout:<><path d="M10 5H5v14h5"/><path d="m14 8 4 4-4 4M18 12H9"/></>,
+  settings:<><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></>,
+  refresh:<><path d="M21 12a9 9 0 1 1-3.18-6.86L21 8"/><path d="M21 3v5h-5"/></>
  } satisfies Record<IconName,ReactNode>
  return <svg className="nav-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">{paths[name]}</svg>
 }
 
-export function Layout({route,children}:Props){
+export function Layout({route,children,session}:Props){
  const [collapsed,setCollapsed]=useState(()=>localStorage.getItem(STORAGE_KEY)==='true')
  const [mobileOpen,setMobileOpen]=useState(false)
  const scrollRef=useRef<HTMLDivElement>(null)
  const mainRef=useRef<HTMLElement>(null)
- const section=route.name==='dashboard'?'dashboard':route.name==='today'?'today':route.name==='not-found'?'':'plans'
+ const section=route.name==='dashboard'?'dashboard':route.name==='today'?'today':route.name==='account'?'account':route.name==='not-found'?'':'plans'
 
  useEffect(()=>{
   scrollRef.current?.scrollTo({top:0})
@@ -33,6 +37,11 @@ export function Layout({route,children}:Props){
 
  const move=(path:string)=>{navigate(path);setMobileOpen(false)}
  const toggle=()=>setCollapsed(value=>{const next=!value;localStorage.setItem(STORAGE_KEY,String(next));return next})
+ const logout=async()=>{await api('/api/auth/logout',{method:'POST'});navigate('/login',true)}
+ const [remaining,setRemaining]=useState(''),[refreshExpiresAt,setRefreshExpiresAt]=useState(''),[refreshing,setRefreshing]=useState(false)
+ const expiresAt=refreshExpiresAt||session?.expiresAt||''
+ useEffect(()=>{const tick=()=>{const expiry=new Date(expiresAt).getTime();if(!Number.isFinite(expiry)){setRemaining('계산 중…');return}const seconds=Math.max(0,Math.ceil((expiry-Date.now())/1000)),minutes=Math.floor(seconds/60);setRemaining(`${minutes}분 ${String(seconds%60).padStart(2,'0')}초`)};tick();const id=setInterval(tick,1000);return()=>clearInterval(id)},[expiresAt])
+ const refreshSession=async()=>{setRefreshing(true);try{const result=await api<{expiresAt:string}>('/api/auth/session/refresh',{method:'POST'});setRefreshExpiresAt(result.expiresAt)}finally{setRefreshing(false)}}
 
  return <div className={`app-shell${collapsed?' sidebar-collapsed':''}${mobileOpen?' mobile-nav-open':''}`}>
   <aside className="sidebar" aria-label="주 메뉴">
@@ -45,6 +54,11 @@ export function Layout({route,children}:Props){
     </button>
    </div>
 
+   {session&&<section className="sidebar-account" aria-label="로그인 계정 정보">
+    <div className="sidebar-account-head"><span className="sidebar-avatar" aria-hidden="true">{session.name.slice(0,1)}</span><div><b>{session.name}</b><span title={session.email}>{session.email}</span></div></div>
+    <div className="sidebar-session"><small><i aria-hidden="true"/>세션 종료까지 <strong>{remaining}</strong></small><button type="button" className="session-refresh" onClick={()=>void refreshSession()} disabled={refreshing} title="세션을 30분 연장" aria-label="세션을 30분 연장"><NavIcon name="refresh"/></button></div>
+   </section>}
+
    <nav className="sidebar-nav">
     <span className="sidebar-section-label">WORKSPACE</span>
     <button className={section==='dashboard'?'active':''} onClick={()=>move('/')} title="대시보드"><NavIcon name="dashboard"/><span className="nav-label">대시보드</span></button>
@@ -54,7 +68,8 @@ export function Layout({route,children}:Props){
    </nav>
 
    <div className="sidebar-bottom">
-    <a className="sidebar-export" href="/api/export" title="전체 데이터 내려받기"><NavIcon name="download"/><span className="nav-label">전체 데이터</span></a>
+    <button className={`sidebar-export${section==='account'?' active':''}`} onClick={()=>move('/account')} title="계정 설정"><NavIcon name="settings"/><span className="nav-label">계정 설정</span></button>
+    <button className="sidebar-export" onClick={()=>void logout()} title="로그아웃"><NavIcon name="logout"/><span className="nav-label">로그아웃</span></button>
    </div>
   </aside>
 
@@ -63,7 +78,7 @@ export function Layout({route,children}:Props){
   <section className="shell-main">
    <div className="mobile-topbar">
     <button className="mobile-menu" onClick={()=>setMobileOpen(true)} aria-label="메뉴 열기"><span/><span/><span/></button>
-    <b>Plan <i>vs</i> Action</b>
+    <b className="brand mobile-brand"><span>Plan</span><i>vs</i><strong>Action</strong></b>
    </div>
    <div className="content-scroll" ref={scrollRef}>
     <main className="content-main" ref={mainRef} tabIndex={-1}>
