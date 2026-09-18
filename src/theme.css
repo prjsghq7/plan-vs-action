@@ -62,6 +62,7 @@ textarea{min-height:78px;resize:vertical}
 .filters{display:flex;gap:8px}.filters input,.filters select{margin:0}
 .danger{border:0;background:transparent;color:#a63322}.danger:disabled{color:#aaa}
 .tag{margin-right:5px;color:#2d587d;font-weight:800}
+.task-tags-inline{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}.task-tags-inline i{color:#2d587d;font-size:10px;font-style:normal;font-weight:800}
 .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
 .comparison>div{display:flex;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
 .comparison b{font-size:22px}.comparison .difference{margin:15px -12px;padding:16px 12px;border:0;background:#f3d66f}
