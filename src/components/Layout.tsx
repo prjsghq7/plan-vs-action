@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState,type ReactNode} from 'react'
 import type {Route} from '../lib/router'
 import {navigate} from '../lib/router'
-import {api} from '../lib/api'
+import {api,SESSION_EXPIRED_EVENT} from '../lib/api'
 
 type Props={route:Route;children:ReactNode;session:{name:string;email:string;expiresAt:string}|null}
 type IconName='home'|'dashboard'|'today'|'plans'|'add'|'download'|'logout'|'settings'|'refresh'
@@ -40,7 +40,7 @@ export function Layout({route,children,session}:Props){
  const logout=async()=>{await api('/api/auth/logout',{method:'POST'});navigate('/login',true)}
  const [remaining,setRemaining]=useState(''),[refreshExpiresAt,setRefreshExpiresAt]=useState(''),[refreshing,setRefreshing]=useState(false)
  const expiresAt=refreshExpiresAt||session?.expiresAt||''
- useEffect(()=>{const tick=()=>{const expiry=new Date(expiresAt).getTime();if(!Number.isFinite(expiry)){setRemaining('계산 중…');return}const seconds=Math.max(0,Math.ceil((expiry-Date.now())/1000)),minutes=Math.floor(seconds/60);setRemaining(`${minutes}분 ${String(seconds%60).padStart(2,'0')}초`)};tick();const id=setInterval(tick,1000);return()=>clearInterval(id)},[expiresAt])
+ useEffect(()=>{let expiredNotified=false;const tick=()=>{const expiry=new Date(expiresAt).getTime();if(!Number.isFinite(expiry)){setRemaining('계산 중…');return}const seconds=Math.ceil((expiry-Date.now())/1000);if(seconds<=0){setRemaining('만료됨');if(!expiredNotified){expiredNotified=true;window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))}return}const minutes=Math.floor(seconds/60);setRemaining(`${minutes}분 ${String(seconds%60).padStart(2,'0')}초`)};tick();const id=setInterval(tick,1000);return()=>clearInterval(id)},[expiresAt])
  const refreshSession=async()=>{setRefreshing(true);try{const result=await api<{expiresAt:string}>('/api/auth/session/refresh',{method:'POST'});setRefreshExpiresAt(result.expiresAt)}finally{setRefreshing(false)}}
 
  return <div className={`app-shell${collapsed?' sidebar-collapsed':''}${mobileOpen?' mobile-nav-open':''}`}>

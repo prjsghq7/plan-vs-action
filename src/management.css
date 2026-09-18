@@ -60,7 +60,7 @@
 .add-task-card:hover:not(:disabled){border-color:#7e9abb;background:#eef3f8;transform:translateY(-2px)}
 .add-task-card:disabled{border-style:solid;opacity:.6}
 .form-submit{margin-top:4px}
-.edit-form,.task-edit{margin-top:18px;border-top:1px solid var(--line);padding-top:20px}
+.edit-form,.task-edit{margin-top:18px;margin-bottom:18px;border-top:1px solid var(--line);padding-top:20px;padding-bottom:18px}
 .task-manager{margin-top:24px;padding-top:24px;border-top:1px solid var(--line)}
 .task-manager-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .task-manager-head h3{margin:6px 0 0;font-size:20px}.task-manager-head h3 small{margin-left:8px;color:var(--muted);font-size:11px;font-weight:700}
