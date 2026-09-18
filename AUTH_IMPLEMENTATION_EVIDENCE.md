@@ -40,7 +40,7 @@ HTTP/1.1 401 Unauthorized
 
 ## 3. 태그 격리와 위조 입력 방어
 
-- 태그 고유성은 공유 워크스페이스가 아니라 `(user_id, normalized_name)` 기준이다.
+- 태그 고유성은 `(user_id, normalized_name)` 기준이다.
 - 태그 생성·검색·할 일 연결 쿼리 모두 현재 사용자의 `user_id`를 포함한다.
 - Zod 객체 스키마가 허용하지 않은 본문 필드를 제거하고, 서버는 소유자를 항상 세션에서 결정한다.
 
@@ -71,6 +71,7 @@ ID 분리: true
 
 - `0013_assign_legacy_data_to_current_user.sql`은 계정이 정확히 하나일 때만 기존 `user_id IS NULL` 계획·태그를 그 계정에 연결한다.
 - `0014_rebuild_tags_for_user_ownership.sql`은 예전 `UNIQUE(workspace_id, name)` 제약을 제거하고 사용자별 태그 고유 인덱스를 만든다.
+- `0015_remove_legacy_workspaces.sql`은 사용자 소유권과 무관한 `workspaces` 구조, 임시 복사 테이블, 중복 인덱스를 제거한다.
 - 내보내기는 현재 사용자의 계정 공개 필드, 계획, 계획 이력, 할 일, 태그, 연결, 실행, 상태 이력, 회고만 포함하며 비밀번호·세션·인증번호는 포함하지 않는다.
 
 로컬 D1 결과:

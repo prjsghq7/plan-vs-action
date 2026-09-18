@@ -9,20 +9,17 @@ DELETE FROM tasks;
 DELETE FROM tags;
 DELETE FROM plans;
 
-INSERT OR IGNORE INTO workspaces (id, name, slug, created_at)
-VALUES ('public', 'Plan vs Action 공개 공간', 'public', '2026-09-10T00:00:00.000Z');
-
 INSERT INTO plans (
-  id, workspace_id, title, priority,
+  id, title, priority,
   success_criteria, created_at, updated_at, deleted_at
 ) VALUES
-  ('sample_plan_assignment', 'public', '[샘플] 과제 6 완성하기', 'high',
+  ('sample_plan_assignment', '[샘플] 과제 6 완성하기', 'high',
    '계획,실행,돌아보기 전체 흐름을 직접 확인한다.',
    '2026-09-08T09:00:00.000Z', '2026-09-10T09:00:00.000Z', NULL),
-  ('sample_plan_empty', 'public', '[샘플] 새 계획 테스트', 'medium',
+  ('sample_plan_empty', '[샘플] 새 계획 테스트', 'medium',
    '계획 상세에서 할 일을 추가하고 수정,삭제해 본다.',
    '2026-09-10T09:00:00.000Z', '2026-09-10T09:00:00.000Z', NULL),
-  ('sample_plan_delete', 'public', '[샘플] 삭제 연습용 계획', 'low',
+  ('sample_plan_delete', '[샘플] 삭제 연습용 계획', 'low',
    '할 일과 계획의 소프트 삭제 동작을 확인한다.',
    '2026-09-10T09:05:00.000Z', '2026-09-10T09:05:00.000Z', NULL);
 
@@ -59,10 +56,10 @@ INSERT INTO tasks (
   ('sample_delete_task_02', 'sample_plan_delete', '삭제 연습 02', '2026-09-13', 'medium', 15, 'active', 0, NULL, '2026-09-10T03:02:00.000Z', '2026-09-10T03:02:00.000Z', NULL),
   ('sample_delete_task_03', 'sample_plan_delete', '삭제 연습 03', '2026-09-14', 'high', 15, 'active', 0, NULL, '2026-09-10T03:03:00.000Z', '2026-09-10T03:03:00.000Z', NULL);
 
-INSERT INTO tags (id, workspace_id, name, normalized_name, search_key) VALUES
-  ('sample_tag_assignment', 'public', '과제', '과제', '과제'),
-  ('sample_tag_design', 'public', '디자인', '디자인', '디자인'),
-  ('sample_tag_test', 'public', '테스트', '테스트', '테스트');
+INSERT INTO tags (id, name, normalized_name, search_key) VALUES
+  ('sample_tag_assignment', '과제', '과제', '과제'),
+  ('sample_tag_design', '디자인', '디자인', '디자인'),
+  ('sample_tag_test', '테스트', '테스트', '테스트');
 
 INSERT INTO task_tags (task_id, tag_id) VALUES
   ('sample_task_done', 'sample_tag_design'),
@@ -91,8 +88,8 @@ INSERT INTO task_status_events (
   ('sample_event_many_15', 'sample_task_many_15', 'sample_task_many_15:0:completed', 'active', 'completed', 0, '2026-09-10T02:15:00.000Z');
 
 INSERT INTO reviews (
-  id, workspace_id, plan_id, improvement_text, next_plan_id, created_at, updated_at
+  id, plan_id, improvement_text, next_plan_id, created_at, updated_at
 ) VALUES
-  ('sample_review_assignment', 'public', 'sample_plan_assignment',
+  ('sample_review_assignment', 'sample_plan_assignment',
    '계획 단계에서 할 일을 더 작게 나누고, 실제 시간은 실행 직후 기록한다.', NULL,
    '2026-09-10T10:00:00.000Z', '2026-09-10T10:00:00.000Z');
