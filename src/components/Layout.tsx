@@ -82,7 +82,7 @@ export function Layout({route,children,session}:Props){
    </div>
    <div className="content-scroll" ref={scrollRef}>
     <main className="content-main" ref={mainRef} tabIndex={-1}>
-     <section className="public-banner"><b>공개 다이어리</b><span>현재는 링크를 아는 누구나 볼 수 있어요. 공개해도 괜찮은 내용만 기록해 주세요.</span></section>
+     <section className="public-banner"><b>내 기록 보관함</b><span>내 계획과 실행 기록은 로그인한 나만 확인할 수 있어요.</span></section>
      {children}
     </main>
    </div>
