@@ -1,6 +1,6 @@
 import {navigate} from '../lib/router'
 import {api} from '../lib/api'
-import {useState} from 'react'
+import {Fragment,useState} from 'react'
 import {Notice} from '../components/Notice'
 import '../auth.css'
 
@@ -46,6 +46,7 @@ function SignupForm(){
  async function submit(event:React.FormEvent<HTMLFormElement>){event.preventDefault();if(submitting)return;const form=new FormData(event.currentTarget);setSubmitting(true);try{const result=await api<{flowId:string;flowToken:string}>('/api/auth/signup',{method:'POST',body:JSON.stringify({email:form.get('email')})});sessionStorage.setItem('pva:verify-email',String(form.get('email')));sessionStorage.setItem('pva:flow-id',result.flowId);sessionStorage.setItem('pva:flow-token',result.flowToken);navigate('/verify-email')}catch(cause){setError((cause as Error).message);setSubmitting(false)}}
  return <>
   <header className="auth-card-head"><span className="auth-eyebrow">CREATE ACCOUNT</span><h2>나만의 기록을 시작하세요.</h2><p>이메일 확인 후 계정을 만들 수 있습니다.</p></header>
+  <VerifySteps step={1}/>
   <form className="auth-form" onSubmit={submit} noValidate>
    <label>이메일<input type="email" name="email" placeholder="name@example.com" autoComplete="email"/></label>
    <button className="auth-submit" type="submit" disabled={submitting}>{submitting?'인증메일 보내는 중…':<>인증메일 받기 <span>→</span></>}</button>
@@ -55,17 +56,23 @@ function SignupForm(){
   <Notice message={error} onClose={()=>setError('')}/></>
 }
 
+function VerifySteps({step}:{step:1|2|3}){
+ const labels=['이메일 확인','가입 정보 입력','로그인']
+ return <div className="auth-verify-steps">{labels.map((label,index)=>{const number=(index+1) as 1|2|3;return <Fragment key={label}>{index>0&&<b/>}<span className={number<step?'done':number===step?'current':''}><i>{number}</i>{label}</span></Fragment>})}</div>
+}
+
 function VerifyEmail(){
- const [code,setCode]=useState(''),[error,setError]=useState(''),[verified,setVerified]=useState(false),[submitting,setSubmitting]=useState(false)
+ const [code,setCode]=useState(''),[error,setError]=useState(''),[verified,setVerified]=useState(false),[completed,setCompleted]=useState(false),[submitting,setSubmitting]=useState(false)
  async function resend(){if(submitting)return;setSubmitting(true);try{const email=sessionStorage.getItem('pva:verify-email');const result=await api<{flowId:string;flowToken:string}>('/api/auth/signup',{method:'POST',body:JSON.stringify({email})});sessionStorage.setItem('pva:flow-id',result.flowId);sessionStorage.setItem('pva:flow-token',result.flowToken);setCode('')}catch(cause){setError((cause as Error).message)}finally{setSubmitting(false)}}
  async function verify(){if(submitting)return;setSubmitting(true);try{await api('/api/auth/verify-email',{method:'POST',body:JSON.stringify({email:sessionStorage.getItem('pva:verify-email'),code,flowId:sessionStorage.getItem('pva:flow-id'),flowToken:sessionStorage.getItem('pva:flow-token')})});setVerified(true)}catch(cause){setError((cause as Error).message)}finally{setSubmitting(false)}}
- async function complete(event:React.FormEvent<HTMLFormElement>){event.preventDefault();if(submitting)return;const form=new FormData(event.currentTarget);if(form.get('password')!==form.get('passwordConfirm'))return setError('비밀번호 확인이 일치하지 않습니다.');setSubmitting(true);try{await api('/api/auth/complete-signup',{method:'POST',body:JSON.stringify({flowId:sessionStorage.getItem('pva:flow-id'),flowToken:sessionStorage.getItem('pva:flow-token'),name:form.get('name'),password:form.get('password')})});['pva:verify-email','pva:flow-id','pva:flow-token'].forEach(key=>sessionStorage.removeItem(key));navigate('/',true)}catch(cause){setError((cause as Error).message);setSubmitting(false)}}
+ async function complete(event:React.FormEvent<HTMLFormElement>){event.preventDefault();if(submitting)return;const form=new FormData(event.currentTarget);if(form.get('password')!==form.get('passwordConfirm'))return setError('비밀번호 확인이 일치하지 않습니다.');setSubmitting(true);try{await api('/api/auth/complete-signup',{method:'POST',body:JSON.stringify({flowId:sessionStorage.getItem('pva:flow-id'),flowToken:sessionStorage.getItem('pva:flow-token'),name:form.get('name'),password:form.get('password')})});['pva:verify-email','pva:flow-id','pva:flow-token'].forEach(key=>sessionStorage.removeItem(key));setCompleted(true)}catch(cause){setError((cause as Error).message);setSubmitting(false)}}
+ if(completed)return <section className="auth-verify"><div className="auth-mail-icon" aria-hidden="true"><span/><i>✓</i></div><span className="auth-eyebrow">ACCOUNT CREATED</span><h2>회원가입이 완료되었습니다.</h2><p>정상적으로 회원가입을 완료했습니다. 로그인해서 기록을 시작해 보세요.</p><VerifySteps step={3}/><button className="auth-submit" onClick={()=>navigate('/login',true)}>로그인 창으로 이동하기 <span>→</span></button></section>
  return <section className="auth-verify">
   <div className="auth-mail-icon" aria-hidden="true"><span/><i>✓</i></div>
-  <span className="auth-eyebrow">VERIFY YOUR EMAIL</span>
-  <h2>이메일 인증을 완료해 주세요.</h2>
-  <p>{verified?'비밀번호를 설정하면 가입이 완료됩니다.':'입력한 이메일로 보낸 인증번호를 확인해 주세요.'}</p>
-  <div className="auth-verify-steps"><span className="done"><i>1</i>가입 정보 입력</span><b/><span><i>2</i>이메일 확인</span><b/><span><i>3</i>로그인</span></div>
+  <span className="auth-eyebrow">{verified?'CREATE YOUR ACCOUNT':'VERIFY YOUR EMAIL'}</span>
+  <h2>{verified?'가입 정보를 입력해 주세요.':'이메일 인증을 완료해 주세요.'}</h2>
+  <p>{verified?'이름과 비밀번호를 설정하면 가입이 완료됩니다.':'입력한 이메일로 보낸 인증번호를 확인해 주세요.'}</p>
+  <VerifySteps step={verified?2:1}/>
   {!verified?<><label className="auth-verify-code"><span>인증번호<button type="button" onClick={resend} disabled={submitting}>{submitting?'보내는 중…':'인증메일 다시 보내기'}</button></span><input value={code} onChange={event=>setCode(event.target.value.replace(/\D/g,'').slice(0,6))} inputMode="numeric" placeholder="인증번호 6자리" autoFocus/></label><button className="auth-submit" onClick={verify} disabled={code.length!==6||submitting}>{submitting?'확인 중…':'인증 완료하기'}</button></>:<form className="auth-form" onSubmit={complete}><label>이름<input name="name" autoComplete="name" placeholder="이름을 입력하세요" required/></label><label>비밀번호<input name="password" type="password" autoComplete="new-password" required/><small>8자 이상, 영문과 숫자를 함께 입력해 주세요.</small></label><label>비밀번호 확인<input name="passwordConfirm" type="password" autoComplete="new-password" required/></label><button className="auth-submit" disabled={submitting}>{submitting?'가입 중…':'가입 완료하기'}</button></form>}
   <Notice message={error} onClose={()=>setError('')}/>
   <button className="auth-text-button" onClick={()=>navigate('/signup')}>이메일 주소 다시 입력하기</button>
