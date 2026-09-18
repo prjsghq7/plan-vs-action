@@ -80,7 +80,7 @@ function ResetPassword(){
  return <><header className="auth-card-head"><span className="auth-eyebrow">RESET PASSWORD</span><h2>비밀번호를 재설정하세요.</h2><p>{step==='email'?'가입한 이메일을 입력해 주세요.':step==='code'?'이메일로 보낸 인증번호를 입력해 주세요.':'새 비밀번호를 설정해 주세요.'}</p></header>{step==='email'?<form className="auth-form" onSubmit={request} noValidate><label>이메일<input value={email} onChange={event=>setEmail(event.target.value)} type="email" required/></label><button className="auth-submit" disabled={busy}>{busy?'인증메일 보내는 중…':'인증메일 받기'}</button></form>:step==='code'?<><label className="auth-verify-code">인증번호<input value={code} onChange={event=>setCode(event.target.value.replace(/\D/g,'').slice(0,6))}/></label><button className="auth-submit" onClick={verify} disabled={busy||code.length!==6}>{busy?'확인 중…':'인증 완료하기'}</button></>:<form className="auth-form" onSubmit={complete} noValidate><label>새 비밀번호<input name="password" type="password" required/><small>8자 이상, 영문과 숫자를 함께 입력해 주세요.</small></label><label>새 비밀번호 확인<input name="confirm" type="password" required/></label><button className="auth-submit" disabled={busy}>{busy?'저장 중…':'새 비밀번호 저장'}</button></form>}<Notice message={error} onClose={()=>setError('')}/><p className="auth-switch"><button onClick={()=>navigate('/login')}>로그인으로 돌아가기</button></p></>
 }
 
-export function AuthPage({mode}:{mode:AuthMode}){
+export function AuthPage({mode,notice='',onNoticeClose=()=>{}}:{mode:AuthMode;notice?:string;onNoticeClose?:()=>void}){
  return <main className="auth-shell">
   <AuthIntro/>
   <section className="auth-panel">
@@ -88,6 +88,7 @@ export function AuthPage({mode}:{mode:AuthMode}){
    <div className="auth-card">
     {mode==='login'?<LoginForm/>:mode==='signup'?<SignupForm/>:mode==='verify-email'?<VerifyEmail/>:<ResetPassword/>}
    </div>
+   <Notice message={notice} onClose={onNoticeClose}/>
    <small className="auth-copyright">© 2026 Plan vs Action</small>
   </section>
  </main>
