@@ -1,6 +1,7 @@
 export const SESSION_EXPIRED_EVENT='pva:session-expired'
 
 const publicAuthPaths=[
+  '/api/auth/me',
   '/api/auth/login',
   '/api/auth/signup',
   '/api/auth/verify-email',

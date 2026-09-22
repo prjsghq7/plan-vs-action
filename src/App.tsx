@@ -23,6 +23,7 @@ export default function App(){
  useEffect(()=>{const expired=()=>{setSession(null);setPlans([]);setError('');setLoading(false);setAuthNotice('세션이 만료되었습니다. 다시 로그인해 주세요.');if(location.pathname!=='/login')navigate('/login',true)};window.addEventListener(SESSION_EXPIRED_EVENT,expired);return()=>window.removeEventListener(SESSION_EXPIRED_EVENT,expired)},[])
  // Initial route normalization and server state hydration.
  useEffect(()=>{if(authMode)return;void api<{name:string;email:string;expiresAt:string}>('/api/auth/me').then(value=>{setSession(value);setAuthNotice('');return loadPlans()}).catch(()=>{if(location.pathname!=='/login')navigate('/login',true)})},[authMode,route.name,loadPlans])
+ useEffect(()=>{if(!authMode)return;let active=true;void api('/api/auth/me').then(()=>{if(active)navigate('/',true)}).catch(()=>{});return()=>{active=false}},[authMode])
  const planId='planId'in route?route.planId:''
  const plan=useMemo(()=>plans.find(item=>item.id===planId),[plans,planId])
  if(authMode)return <AuthPage mode={authMode} notice={authNotice} onNoticeClose={()=>setAuthNotice('')}/>
