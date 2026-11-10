@@ -41,3 +41,6 @@ sample-data.sql
 *.sql
 !migrations/
 !migrations/**/*.sql
+
+# Public project README
+!README.md
